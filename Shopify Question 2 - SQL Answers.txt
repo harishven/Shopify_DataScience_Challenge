@@ -1,0 +1,41 @@
+#### 1. How many orders were shipped by Speedy Express in total?
+
+SELECT o.ShipperID, s.ShipperName, count(OrderID) FROM Shippers as s 
+INNER JOIN Orders as o on s.ShipperID = o.ShipperID 
+where s.ShipperName = "Speedy Express" ;
+
+-- 54 orders in total by speedy Express
+------------------------------------------------------------------------
+
+#### 2. What is the last name of the employee with the most orders?
+
+SELECT e.LastName, count(OrderID) as "# Orders" FROM Employees as e 
+INNER JOIN Orders as o on e.EmployeeID = o.EmployeeID group by o.EmployeeID 
+order by Count(orderID) DESC LIMIT 1;
+
+-- Peacock has the most orders<40 orders>
+------------------------------------------------------------------------
+
+#### 3. What product was ordered the most by customers in Germany?
+
+
+Select ProductName from Products where ProductID = 
+ (select ProductID from 
+   (select ProductID, Count(ProductID) from OrderDetails where orderID in
+      (select OrderID from Orders as o where o.CustomerID in 
+         (select c.CustomerID from Orders as o 
+          inner join Customers as c  where c.Country = "Germany"
+          )
+       ) 
+    group by ProductID order by Count(ProductID) DESC) 
+  LIMIT 1);
+
+-- Gorgonzola Telino
+
+We write multiple Sub Queries here, first step comes as inner most query and the rest follows...
+1. Get the customerID from Customer with country = Germany
+2. Get the OrderID from Orders where CustomerID IN (values from prev step)
+3. Get the ProductID and their count from OrderDetails by grouping
+4. Order the above result in DESC and select top 1
+5. From this we select only Product ID and Leave the Count
+6. from the Products table, get the Product name for the obtained ProductID
